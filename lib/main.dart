@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io' as io;
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
@@ -31,22 +31,25 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final ImagePicker _picker = ImagePicker();
-  PickedFile _image;
+  File _image;
   bool uploadStatus = false;
 
   _imageFromCamera() async {
-    final PickedFile image =
+    final PickedFile pickedImage =
         await _picker.getImage(source: ImageSource.camera, imageQuality: 50);
+    final File fileImage = File(pickedImage.path);
     setState(() {
-      _image = image;
+      _image = fileImage;
     });
   }
 
   _imageFromGallery() async {
-    final PickedFile image =
+    final PickedFile pickedImage =
         await _picker.getImage(source: ImageSource.gallery, imageQuality: 50);
+    final File fileImage = File(pickedImage.path);
+
     setState(() {
-      _image = image;
+      _image = fileImage;
     });
   }
 
@@ -56,6 +59,13 @@ class _HomePageState extends State<HomePage> {
           context: context,
           title: "Error Uploading!",
           content: "No Image was selected.");
+      return;
+    }
+    if (_image.lengthSync() > 100000) {
+      showAlertDialog(
+          context: context,
+          title: "Error Uploading!",
+          content: "Image Size should be less than 100KB.");
       return;
     }
     setState(() {
@@ -101,42 +111,45 @@ class _HomePageState extends State<HomePage> {
                     strokeWidth: 7,
                   ),
                 )
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        bottomPickerSheet(
-                            context, _imageFromCamera, _imageFromGallery);
-                      },
-                      child: CircleAvatar(
-                        radius: MediaQuery.of(context).size.width / 6,
-                        backgroundColor: Colors.grey,
-                        backgroundImage: _image != null
-                            ? FileImage(io.File(_image.path))
-                            : AssetImage('assets/camera_img.png'),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    ElevatedButton(
-                      onPressed: uploadImage,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.file_upload),
-                            Text(
-                              'Upload Image',
-                            ),
-                          ],
+              : Padding(
+                  padding: const EdgeInsets.only(top: 40),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          bottomPickerSheet(
+                              context, _imageFromCamera, _imageFromGallery);
+                        },
+                        child: CircleAvatar(
+                          radius: MediaQuery.of(context).size.width / 6,
+                          backgroundColor: Colors.grey,
+                          backgroundImage: _image != null
+                              ? FileImage(_image)
+                              : AssetImage('assets/camera_img.png'),
                         ),
                       ),
-                    )
-                  ],
+                      SizedBox(
+                        height: 20,
+                      ),
+                      ElevatedButton(
+                        onPressed: uploadImage,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.file_upload),
+                              Text(
+                                'Upload Image',
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
                 ),
         ),
       ),
