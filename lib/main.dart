@@ -38,19 +38,40 @@ class _HomePageState extends State<HomePage> {
     final PickedFile pickedImage =
         await _picker.getImage(source: ImageSource.camera, imageQuality: 50);
     final File fileImage = File(pickedImage.path);
-    setState(() {
-      _image = fileImage;
-    });
+
+    if (imageConstraint(fileImage))
+      setState(() {
+        _image = fileImage;
+      });
   }
 
   _imageFromGallery() async {
     final PickedFile pickedImage =
         await _picker.getImage(source: ImageSource.gallery, imageQuality: 50);
     final File fileImage = File(pickedImage.path);
+    if (imageConstraint(fileImage))
+      setState(() {
+        _image = fileImage;
+      });
+  }
 
-    setState(() {
-      _image = fileImage;
-    });
+  bool imageConstraint(File image) {
+    if (!['bmp', 'jpg', 'jpeg']
+        .contains(image.path.split('.').last.toString())) {
+      showAlertDialog(
+          context: context,
+          title: "Error Uploading!",
+          content: "Image format should be jpg/jpeg/bmp.");
+      return false;
+    }
+    if (image.lengthSync() > 100000) {
+      showAlertDialog(
+          context: context,
+          title: "Error Uploading!",
+          content: "Image Size should be less than 100KB.");
+      return false;
+    }
+    return true;
   }
 
   uploadImage() async {
@@ -61,13 +82,7 @@ class _HomePageState extends State<HomePage> {
           content: "No Image was selected.");
       return;
     }
-    if (_image.lengthSync() > 100000) {
-      showAlertDialog(
-          context: context,
-          title: "Error Uploading!",
-          content: "Image Size should be less than 100KB.");
-      return;
-    }
+
     setState(() {
       uploadStatus = true;
     });
