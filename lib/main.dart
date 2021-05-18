@@ -37,6 +37,13 @@ class _HomePageState extends State<HomePage> {
   _imageFromCamera() async {
     final PickedFile pickedImage =
         await _picker.getImage(source: ImageSource.camera, imageQuality: 50);
+    if (pickedImage == null) {
+      showAlertDialog(
+          context: context,
+          title: "Error Uploading!",
+          content: "No Image was selected.");
+      return;
+    }
     final File fileImage = File(pickedImage.path);
 
     if (imageConstraint(fileImage))
@@ -48,6 +55,13 @@ class _HomePageState extends State<HomePage> {
   _imageFromGallery() async {
     final PickedFile pickedImage =
         await _picker.getImage(source: ImageSource.gallery, imageQuality: 50);
+    if (pickedImage == null) {
+      showAlertDialog(
+          context: context,
+          title: "Error Uploading!",
+          content: "No Image was selected.");
+      return;
+    }
     final File fileImage = File(pickedImage.path);
     if (imageConstraint(fileImage))
       setState(() {
